@@ -2,6 +2,9 @@
 #include <Windows.h>
 #include "bintre.h"
 #include <sstream>
+#include <fstream>
+#include <random>
+#include <unordered_set>
 using std::cout;
 
 
@@ -11,29 +14,22 @@ int main()
     SetConsoleOutputCP(1251);
 
 #define p(ptr) ((ptr) ? (std::stringstream() << *(ptr)).str() : std::string("NULL"))
+#define test_print(tree) cout << "Дерево (высота=" << tree.height() << ", макс.=" << p(tree.find_max()) << ", мин.=" << p(tree.find_min()) << "):\n"; tree.print(); cout << std::endl;
+#define test_remove(tree, value) tree.remove(value); cout << #value " удалено:\n"; test_print(tree)
+#define test_search(tree, value) cout << value << (tree.find(value) ? " нашлось\n" : " не нашлось\n");
     
-    cout << "= BST ======================================\n\n";
+    cout << "= BST ==========================================================\n\n";
     {
         BinaryTree<unsigned int> TreeBST(BST);
         const unsigned int vv[] = { 45, 78, 11, 11, 12, 56, 49, 89, 10, 52, 42, 88, 13, 100 };
         for (auto v : vv)
             TreeBST.insert(v);
-        cout << "Дерево (высота=" << TreeBST.height() << ", макс.=" << p(TreeBST.find_max()) << ", мин.=" << p(TreeBST.find_min()) << "):\n";
-        TreeBST.print();
-        cout << '\n' << 10 << (TreeBST.find(10) ? " нашлось\n" : " не нашлось\n");
-        cout << 1 << (TreeBST.find(1) ? " нашлось\n" : " не нашлось\n");
-        TreeBST.remove(11);
-        cout << "\n11 удалено:\n";
-        cout << "Дерево (высота=" << TreeBST.height() << ", макс.=" << p(TreeBST.find_max()) << ", мин.=" << p(TreeBST.find_min()) << "):\n";
-        TreeBST.print();
-        TreeBST.remove(45);
-        cout << "\n45 удалено:\n";
-        cout << "Дерево (высота=" << TreeBST.height() << ", макс.=" << p(TreeBST.find_max()) << ", мин.=" << p(TreeBST.find_min()) << "):\n";
-        TreeBST.print();
-        TreeBST.remove(13);
-        cout << "\n13 удалено:\n";
-        cout << "Дерево (высота=" << TreeBST.height() << ", макс.=" << p(TreeBST.find_max()) << ", мин.=" << p(TreeBST.find_min()) << "):\n";
-        TreeBST.print();
+        test_print(TreeBST);
+        test_search(TreeBST, 10);
+        test_search(TreeBST, 1);
+        test_remove(TreeBST, 11);
+        test_remove(TreeBST, 45);
+        test_remove(TreeBST, 13);
         cout << "\nПрямой обход: ";
         TreeBST.print_straight();
         cout << "\nЦентрированный обход: ";
@@ -46,95 +42,98 @@ int main()
     }
     cout << "\n\n";
     
-    cout << "= AVL ======================================\n\n";
+    cout << "= AVL ==========================================================\n\n";
     {
         BinaryTree<unsigned int> TreeAVL(AVL);
         const unsigned int vv[] = { 45, 78, 11, 11, 12, 56, 49, 89, 10, 52, 42, 88, 13, 100 };
         for (auto v : vv)
             TreeAVL.insert(v);
-        cout << "Дерево (высота=" << TreeAVL.height() << ", макс.=" << p(TreeAVL.find_max()) << ", мин.=" << p(TreeAVL.find_min()) << "):\n";
-        TreeAVL.print();
-        cout << '\n' << 10 << (TreeAVL.find(10) ? " нашлось\n" : " не нашлось\n");
-        cout << 1 << (TreeAVL.find(1) ? " нашлось\n" : " не нашлось\n");
-        TreeAVL.remove(11);
-        cout << "\n11 удалено:\n";
-        cout << "Дерево (высота=" << TreeAVL.height() << ", макс.=" << p(TreeAVL.find_max()) << ", мин.=" << p(TreeAVL.find_min()) << "):\n";
-        TreeAVL.print();
-        TreeAVL.remove(45);
-        cout << "\n45 удалено:\n";
-        cout << "Дерево (высота=" << TreeAVL.height() << ", макс.=" << p(TreeAVL.find_max()) << ", мин.=" << p(TreeAVL.find_min()) << "):\n";
-        TreeAVL.print();
-        TreeAVL.remove(42);
-        cout << "\n42 удалено:\n";
-        cout << "Дерево (высота=" << TreeAVL.height() << ", макс.=" << p(TreeAVL.find_max()) << ", мин.=" << p(TreeAVL.find_min()) << "):\n";
-        TreeAVL.print();
+        test_print(TreeAVL);
+        test_search(TreeAVL, 10);
+        test_search(TreeAVL, 1);
+        test_remove(TreeAVL, 11);
+        test_remove(TreeAVL, 45);
+        test_remove(TreeAVL, 42);
         TreeAVL.destroy();
     }
     cout << "\n\n";
     
-    cout << "= RnB ======================================\n\n";
+    cout << "= RnB ==========================================================\n\n";
     {
         BinaryTree<unsigned int> RNBTree(RNB);
         const unsigned int vv[] = { 45, 78, 11, 11, 12, 56, 49, 89, 10, 52, 42, 88, 13, 100 };
         for (auto v : vv)
             RNBTree.insert(v);
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        cout << '\n' << 10 << (RNBTree.find(10) ? " нашлось\n" : " не нашлось\n");
-        cout << 1 << (RNBTree.find(1) ? " нашлось\n" : " не нашлось\n");
-        RNBTree.remove(11);
-        cout << "\n11 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(45);
-        cout << "\n45 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(42);
-        cout << "\n42 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(78);
-        cout << "\n78 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(52);
-        cout << "\n52 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(56);
-        cout << "\n56 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(88);
-        cout << "\n88 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(100);
-        cout << "\n100 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(10);
-        cout << "\n10 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(12);
-        cout << "\n12 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(49);
-        cout << "\n49 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(13);
-        cout << "\n13 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
-        RNBTree.remove(89);
-        cout << "\n89 удалено:\n";
-        cout << "Дерево (высота=" << RNBTree.height() << ", макс.=" << p(RNBTree.find_max()) << ", мин.=" << p(RNBTree.find_min()) << "):\n";
-        RNBTree.print();
+        test_print(RNBTree);
+        test_search(RNBTree, 10);
+        test_search(RNBTree, 1);
+        test_remove(RNBTree, 11);
+        test_remove(RNBTree, 45);
+        test_remove(RNBTree, 42);
+        test_remove(RNBTree, 78);
+        test_remove(RNBTree, 52);
+        test_remove(RNBTree, 56);
+        test_remove(RNBTree, 88);
+        test_remove(RNBTree, 100);
+        test_remove(RNBTree, 10);
+        test_remove(RNBTree, 12);
+        test_remove(RNBTree, 49);
+        test_remove(RNBTree, 13);
+        test_remove(RNBTree, 89);
         RNBTree.destroy();
+    }
+    cout << "\n\n";
+
+    cout << "= СТАТИСТИКА ДЛЯ ЭКСПЕРИМЕНТАЛЬНЫХ ДАННЫХ ====================\n";
+    for (unsigned int t;;)
+    {
+        cout << "\nВведите тип дерева для формирования статистики (1-BST, 2-AVL, 3-RNB) или 0 для выхода: ";
+        do
+            std::cin >> t;
+        while (!(t <= 3));
+        if (t == 0)
+            break;
+        BinaryTreeType types[] = { BST, AVL, RNB };
+        const char* filenames[] = { "stat_BST.txt", "stat_AVL.txt", "stat_RNB.txt", "stat_BST_monoton.txt", "stat_AVL_monoton.txt", "stat_RNB_monoton.txt" };
+        std::ofstream out(filenames[t - 1]);
+        if (!out.is_open())
+        {
+        FAIL_FOPEN:
+            cout << "Не удалось открыть файл!\n";
+            break;
+        }
+        BinaryTree<unsigned int> Tree(types[t - 1]);
+        std::mt19937 generate(std::random_device {}());
+        std::uniform_int_distribution<unsigned int> dist(0, 50'000'000);
+        std::unordered_set<unsigned int> used;
+        used.reserve(100'000);
+        unsigned int n = 0, k;
+        while (n < 56'000)
+        {
+            k = dist(generate);
+            if (used.insert(k).second)
+            {
+                Tree.insert(k);
+                ++n;
+                out << n << " " << Tree.height() << "\n";
+                if (n % 100 == 0)
+                    cout << "  Всего вставлено " << n << " значений...\n";
+            }
+        }
+        out.close();
+        out.open(filenames[t - 1 + 3]);
+        if (!out.is_open())
+            goto FAIL_FOPEN;
+        Tree.destroy();
+        for (n = 1; n <= 56'000; ++n)
+        {
+            Tree.insert(n);
+            out << n << " " << Tree.height() << "\n";
+            if (n % 100 == 0)
+                cout << "  Монотонно вставлено " << n << " значений...\n";
+        }
+        out.close();
+        Tree.destroy();
     }
 
     return 0;

@@ -114,23 +114,21 @@ protected:
 
     Node* balance(Node* node)
     {
-        Node* result;
         int bf = balance_factor(node);
         if (bf < -1)
         {
             if (balance_factor(node->left) > 0)
                 rotate_left(node->left);
-            result = rotate_right(node);
+            return rotate_right(node);
         }
         else if (bf > 1)
         {
             if (balance_factor(node->right) < 0)
-                node->right = rotate_right(node->right);
-            result = rotate_left(node);
+                rotate_right(node->right);
+            return rotate_left(node);
         }
         else
-            result = node;
-        return (result->parent ? (result->parent->left == result ? result->parent->left : result->parent->right) : root) = result;
+            return node;
     }
 
 
@@ -236,14 +234,11 @@ public:
 
     void remove(T value)
     {
-        if (!root)
-            return;
-
         Node** to_remove = &root, * parent {}, * caret, * trash, * sibling;
         unsigned int col;
 
     REMOVE:
-        while ((*to_remove)->data != value)
+        while ((*to_remove) && (*to_remove)->data != value)
             if (value < (*to_remove)->data)
                 to_remove = &((*to_remove)->left);
             else
@@ -254,11 +249,6 @@ public:
             parent = (*to_remove == root ? root : (*to_remove)->parent);
             if (!((*to_remove)->left) && !((*to_remove)->right))
             {
-                //if (type == RNB && *to_remove != root && col == 'B')
-                //{
-                //    (*to_remove == parent->left ? rotate_left(parent) : rotate_right(parent));
-                //    col = parent->color;
-                //}
                 *to_remove = NULL;
             }
             else if (!((*to_remove)->left))
@@ -498,13 +488,18 @@ public:
     void destroy()
     {
         if (root)
-        {
-            if (root->left)
-                subtree(root->left).destroy();
-            if (root->right)
-                subtree(root->right).destroy();
-            delete root;
-            root = NULL;
-        }
+            for (Node** to_remove = &root, ** next, * trash; to_remove;)
+                if ((*to_remove)->left)
+                    to_remove = &((*to_remove)->left);
+                else if ((*to_remove)->right)
+                    to_remove = &((*to_remove)->right);
+                else
+                {
+                    trash = *to_remove;
+                    next = (to_remove == &root ? NULL : (trash->parent->parent ? &(trash->parent == trash->parent->parent->left ? trash->parent->parent->left : trash->parent->parent->right) : &root));
+                    *to_remove = NULL;
+                    to_remove = next;
+                    delete trash;
+                }
     }
 };

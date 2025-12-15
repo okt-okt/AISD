@@ -20,9 +20,9 @@ class BinaryTree
     struct Node
     {
         Node* left, * right, * parent;
-        unsigned int height;
+        unsigned int height, color;
         T data;
-        Node(T value, Node* parent, unsigned int height = 0) : data(value), left(NULL), right(NULL), height(height), parent(parent)
+        Node(T value, Node* parent, unsigned int color = '0', unsigned int height = 1) : data(value), left(NULL), right(NULL), height(height), parent(parent), color(color)
         {
         }
     }* root;
@@ -38,7 +38,7 @@ class BinaryTree
 
     static Node* ptr_to_node(T* ptr)
     {
-        return ptr ? reinterpret_cast<Node*>(reinterpret_cast<Node**>(reinterpret_cast<unsigned int*>(ptr) - 1) - 3) : NULL;
+        return ptr ? reinterpret_cast<Node*>(reinterpret_cast<Node**>(reinterpret_cast<unsigned int*>(ptr) - 2) - 3) : NULL;
     }
 
     
@@ -52,7 +52,6 @@ class BinaryTree
     {
         return { node, type };
     }
-
 
 public:
 
@@ -81,6 +80,8 @@ protected:
         node_next->left = node;
         if (node->right = node_last)
             node_last->parent = node;
+        (node->parent ? (node->parent->left == node ? node->parent->left : node->parent->right) : root) = node_next;
+        node_next->parent = node->parent;
         node->parent = node_next;
         update_height(node);
         update_height(node_next);
@@ -93,8 +94,10 @@ protected:
     {
         Node* node_next = node->left, * node_last = node_next->right;
         node_next->right = node;
-        if(node->left = node_last)
+        if (node->left = node_last)
             node_last->parent = node;
+        (node->parent ? (node->parent->left == node ? node->parent->left : node->parent->right) : root) = node_next;
+        node_next->parent = node->parent;
         node->parent = node_next;
         update_height(node);
         update_height(node_next);
@@ -111,21 +114,23 @@ protected:
 
     Node* balance(Node* node)
     {
+        Node* result;
         int bf = balance_factor(node);
         if (bf < -1)
         {
             if (balance_factor(node->left) > 0)
-                node->left = rotate_left(node->left);
-            return rotate_right(node);
+                rotate_left(node->left);
+            result = rotate_right(node);
         }
         else if (bf > 1)
         {
             if (balance_factor(node->right) < 0)
                 node->right = rotate_right(node->right);
-            return rotate_left(node);
+            result = rotate_left(node);
         }
         else
-            return node;
+            result = node;
+        return (result->parent ? (result->parent->left == result ? result->parent->left : result->parent->right) : root) = result;
     }
 
 
@@ -135,7 +140,7 @@ public:
     {
         if (Node* caret = root)
         {
-            Node* added {}, * parent;
+            Node* added {}, * parent, * grandpa, * uncle;
             for (;;)
             {
                 if (value == caret->data)
@@ -145,14 +150,14 @@ public:
                     if (caret->left)
                         caret = caret->left;
                     else
-                        caret->left = added = new Node(value, caret, 1);
+                        caret->left = added = new Node(value, caret, (type == RNB ? 'R' : '0'));
                 }
                 else
                 {
                     if (caret->right)
                         caret = caret->right;
                     else
-                        caret->right = added = new Node(value, caret, 1);
+                        caret->right = added = new Node(value, caret, (type == RNB ? 'R' : '0'));
                 }
             }
             for (caret = added; caret; caret = parent)
@@ -160,22 +165,82 @@ public:
                 update_height(caret);
                 parent = caret->parent;
                 if (type == AVL)
-                {
-                    caret = (caret->parent ? (caret->data < caret->parent->data ? caret->parent->left : caret->parent->right) : root) = balance(caret);
-                    caret->parent = parent;
-                }
+                    balance(caret);
             }
+            if (type == RNB && (caret = added))
+            {
+                while (caret != root && caret->parent->color == 'R')
+                {
+                    parent = caret->parent;
+                    grandpa = parent->parent;
+
+                    if (parent == grandpa->left)
+                    {
+                        uncle = grandpa->right;
+
+                        if (uncle && uncle->color == 'R')
+                        {
+                            parent->color = uncle->color = 'B';
+                            grandpa->color = 'R';
+                            caret = grandpa;
+                        }
+                        else
+                        {
+                            if (caret == parent->right)
+                            {
+                                rotate_left(caret = parent);
+                                parent = caret->parent;
+                                grandpa = parent->parent;
+                            }
+
+                            parent->color = 'B';
+                            grandpa->color = 'R';
+                            rotate_right(grandpa);
+                        }
+                    }
+                    else
+                    {
+                        uncle = grandpa->left;
+
+                        if (uncle && uncle->color == 'R')
+                        {
+                            parent->color = uncle->color = 'B';
+                            grandpa->color = 'R';
+                            caret = grandpa;
+                        }
+                        else
+                        {
+                            if (caret == parent->left)
+                            {
+                                rotate_right(caret = parent);
+                                parent = caret->parent;
+                                grandpa = parent->parent;
+                            }
+
+                            parent->color = 'B';
+                            grandpa->color = 'R';
+                            rotate_left(grandpa);
+                        }
+                    }
+                }
+                root->color = 'B';
+            }
+            
             return node_to_ptr(added);
         }
         else
-            return node_to_ptr(root = new Node(value, NULL, 1));
+            return node_to_ptr(root = new Node(value, NULL, (type == RNB ? 'B' : '0')));
     }
 
 
 
     void remove(T value)
     {
-        Node** to_remove = &root, * parent, * caret, * trash;
+        if (!root)
+            return;
+
+        Node** to_remove = &root, * parent {}, * caret, * trash, * sibling;
+        unsigned int col;
 
     REMOVE:
         while ((*to_remove)->data != value)
@@ -185,10 +250,15 @@ public:
                 to_remove = &((*to_remove)->right);
         if (*to_remove)
         {
-            parent = (*to_remove)->parent;
-            trash = (*to_remove);
+            col = (trash = (*to_remove))->color;
+            parent = (*to_remove == root ? root : (*to_remove)->parent);
             if (!((*to_remove)->left) && !((*to_remove)->right))
             {
+                //if (type == RNB && *to_remove != root && col == 'B')
+                //{
+                //    (*to_remove == parent->left ? rotate_left(parent) : rotate_right(parent));
+                //    col = parent->color;
+                //}
                 *to_remove = NULL;
             }
             else if (!((*to_remove)->left))
@@ -209,17 +279,96 @@ public:
                 goto REMOVE;
             }
 
-            if (type == AVL)
-                for (caret = *to_remove; caret; caret = parent)
+            if (type == RNB && col == 'B')
+            {
+                for (caret = *to_remove; caret != root && (!caret || caret->color == 'B');)
                 {
-                    update_height(caret);
-                    parent = caret->parent;
-                    if (type == AVL)
+                    if (caret == parent->left)
                     {
-                        caret = (caret->parent ? (caret->data < caret->parent->data ? caret->parent->left : caret->parent->right) : root) = balance(caret);
-                        caret->parent = parent;
+                        sibling = parent->right;
+                        if (sibling && sibling->color == 'R')
+                        {
+                            sibling->color = 'B';
+                            parent->color = 'R';
+                            rotate_left(parent);
+                            sibling = parent->right;
+                        }
+                        if (sibling && (!(sibling->left) || sibling->left->color == 'B') && (!(sibling->right) || sibling->right->color == 'B'))
+                        {
+                            sibling->color = 'R';
+                            if ((caret = parent) != root)
+                                parent = caret->parent;
+                        }
+                        else
+                        {
+                            if (sibling && (!(sibling->right) || sibling->right->color == 'B'))
+                            {
+                                if (sibling->left)
+                                    sibling->left->color = 'B';
+                                sibling->color = 'R';
+                                rotate_right(sibling);
+                                sibling = parent->right;
+                            }
+                            if (sibling)
+                                sibling->color = parent->color;
+                            parent->color = 'B';
+                            if (sibling && sibling->right)
+                                sibling->right->color = 'B';
+                            rotate_left(parent);
+                            caret = root;
+                        }
                     }
+                    else
+                    {
+                        sibling = parent->left;
+                        if (sibling && sibling->color == 'R')
+                        {
+                            sibling->color = 'B';
+                            parent->color = 'R';
+                            rotate_right(parent);
+                            sibling = parent->left;
+                        }
+                        if (sibling && (!(sibling->left) || sibling->left->color == 'B') && (!(sibling->right) || sibling->right->color == 'B'))
+                        {
+                            sibling->color = 'R';
+                            if ((caret = parent) != root)
+                                parent = parent;
+                        }
+                        else
+                        {
+                            if (sibling && (!(sibling->left) || sibling->left->color == 'B'))
+                            {
+                                if (sibling->right)
+                                    sibling->right->color = 'B';
+                                sibling->color = 'R';
+                                rotate_left(sibling);
+                                sibling = parent->left;
+                            }
+                            if (sibling)
+                                sibling->color = parent->color;
+                            parent->color = 'B';
+                            if (sibling && sibling->left)
+                                sibling->left->color = 'B';
+                            rotate_right(parent);
+                            caret = root;
+                        }
+                    }
+                    if (caret)
+                        update_height(caret);
+                    if (sibling)
+                        update_height(sibling);
                 }
+                if (caret)
+                    caret->color = 'B';
+            }
+
+            for (caret = (*to_remove ? *to_remove : parent); caret; caret = parent)
+            {
+                update_height(caret);
+                parent = caret->parent;
+                if (type == AVL)
+                    balance(caret);
+            }
 
             delete trash;
         }
@@ -236,7 +385,7 @@ public:
 
     unsigned int height()
     {
-        return root ? root->height : 0;
+        return (root ? root->height : 0) + (type == RNB);
     }
 
 
@@ -273,13 +422,13 @@ protected:
     {
         if (node)
         {
-            std::cout << "+- " << node->data << '\n' << children_space;
+            std::cout << "+- " << node->data << (type == RNB ? (node->color == 'R' ? " (red)\n" : " (black)\n") : "\n") << children_space;
             print_part(node->right, children_space + "|  ");
             std::cout << children_space;
             print_part(node->left, children_space + "   ");
         }
         else
-            std::cout << "+- NULL\n";
+            std::cout << "+- NULL" << (type == RNB ? " (black)\n" : "\n");
     }
 
 public:

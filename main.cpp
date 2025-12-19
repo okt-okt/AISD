@@ -94,9 +94,10 @@ int main()
         if (t == 0)
             break;
         BinaryTreeType types[] = { BST, AVL, RNB };
-        const char* filenames[] = { "stat_BST.txt", "stat_AVL.txt", "stat_RNB.txt", "stat_BST_monoton.txt", "stat_AVL_monoton.txt", "stat_RNB_monoton.txt" };
-        std::ofstream out(filenames[t - 1]);
-        if (!out.is_open())
+        const char* filenames[] = { "stat_BST.txt", "stat_AVL.txt", "stat_RNB.txt", "stat_BST_monoton.txt", "stat_AVL_monoton.txt", "stat_RNB_monoton.txt",
+            "stat_BST_short.txt", "stat_AVL_short.txt", "stat_RNB_short.txt", "stat_BST_monoton_short.txt", "stat_AVL_monoton_short.txt", "stat_RNB_monoton_short.txt", };
+        std::ofstream out(filenames[t - 1]), out_short(filenames[t - 1 + 6]);
+        if (!out.is_open() || !out_short.is_open())
         {
         FAIL_FOPEN:
             cout << "Не удалось открыть файл!\n";
@@ -107,7 +108,7 @@ int main()
         std::uniform_int_distribution<unsigned int> dist(0, 50'000'000);
         std::unordered_set<unsigned int> used;
         used.reserve(100'000);
-        unsigned int n = 0, k;
+        unsigned int n = 0, k, last = -1;
         while (n < 56'000)
         {
             k = dist(generate);
@@ -116,23 +117,31 @@ int main()
                 Tree.insert(k);
                 ++n;
                 out << n << " " << Tree.height() << "\n";
+                if (Tree.height() != last)
+                    out_short << n << " " << (last = Tree.height()) << "\n";
                 if (n % 100 == 0)
                     cout << "  Всего вставлено " << n << " значений...\n";
             }
         }
         out.close();
         out.open(filenames[t - 1 + 3]);
-        if (!out.is_open())
+        out_short.close();
+        out_short.open(filenames[t - 1 + 9]);
+        if (!out.is_open() || !out_short.is_open())
             goto FAIL_FOPEN;
         Tree.destroy();
+        last = -1;
         for (n = 1; n <= 56'000; ++n)
         {
             Tree.insert(n);
             out << n << " " << Tree.height() << "\n";
+            if (Tree.height() != last)
+                out_short << n << " " << (last = Tree.height()) << "\n";
             if (n % 100 == 0)
                 cout << "  Монотонно вставлено " << n << " значений...\n";
         }
         out.close();
+        out_short.close();
         Tree.destroy();
     }
 

@@ -16,11 +16,7 @@ enum sudoku_solver_method : byte
     iteration,
     limited,
     DLX,
-    multithread
 };
-
-
-void pr(class sudoku_solver*);
 
 
 class sudoku_solver
@@ -47,8 +43,6 @@ public:
 
     inline int is_locked(byte x, byte y)
     {
-        //--x, --y;
-        //return (x > 8 || y > 8) ? -1 : field[x][y].locked;
         return field[x - 1][y - 1].locked;
     }
 
@@ -56,12 +50,10 @@ public:
 
     byte get(byte x, byte y)
     {
-        //--x, --y;
-        //return (x > 8 || y > 8) ? -1 : field[x][y].val;
         return field[x - 1][y - 1].val;
     }
 
-public:
+private:
 
     byte add_impossible(byte x_1, byte y_1, byte val)
     {
@@ -97,49 +89,6 @@ public:
     }
 
 public:
-
-    //// returns:
-    //// 1 - (x;y) was locked before func called but still was set to val
-    //// 0 - (x;y) was not locked before func called and was set to val
-    //// -1 - invalid args
-    //// -2 - [for method=limited] set value creates impossible combination
-    //int set_forced(byte x, byte y, byte val, byte lock = 1)
-    //{
-    //    --x, --y;
-    //    //if (x > 8 || y > 8 || val > 9)
-    //    //    return -1;
-    //    field[x][y].val = val;
-    //    val = field[x][y].locked;
-    //    field[x][y].locked = (lock ? 1 : 0);
-    //
-    //    if (method == limited && field[x][y].val)
-    //    {
-    //        byte a, b, r;
-    //        for (a = 0, b = y; a < 9; ++a)
-    //            if (!(field[a][b].locked) && a != x)
-    //            {
-    //                if (field[x][y].val)
-    //                {
-    //                    r = add_impossible(a, b, field[x][y].val);
-    //                    if (r == 8)
-    //                        (pr(this), set_forced(a + 1, b + 1, get_last_possible(a, b), field[x][y].locked), pr(this));
-    //                    else if (r == 9)
-    //                        return -2;
-    //                }
-    //                else if(remove_impossible(a,b,field[x][y].val))
-    //
-    //        for (a = x, b = 0; b < 9; ++b)
-    //            if (!(field[a][b].locked) && b != y && add_impossible(a, b, field[x][y].val) == 8)
-    //                (pr(this), set_forced(a + 1, b + 1, get_last_possible(a, b), field[x][y].locked), pr(this));
-    //        for (a = x / 3 * 3; a < (x / 3 + 1) * 3; ++a)
-    //            for (b = y / 3 * 3; b < (y / 3 + 1) * 3; ++b)
-    //                if (!(field[a][b].locked) && !(a == x && b == y) && add_impossible(a, b, field[x][y].val) == 8)
-    //                    (pr(this), set_forced(a + 1, b + 1, get_last_possible(a, b), field[x][y].locked), pr(this));
-    //    }
-    //    return val;
-    //}
-
-
 
     // returns:
     // //0-9 - (x;y) was not locked and held that value before func called, (x;y) was set to val
@@ -232,8 +181,6 @@ public:
     int check(byte x, byte y, byte val)
     {
         --x, --y;
-        //if (x > 8 || y > 8 || !val || val > 9)
-        //    return -1;
         byte a, b;
         for (a = 0, b = y; a < 9; ++a)
             if (a != x && field[a][b].val == val)
@@ -318,13 +265,13 @@ public:
         return 0;
     }
 
-
+private:
 
     struct DLXNode
     {
         DLXNode* left, * right, * up, * down, * col;
         int name, size;
-    } *soluts[500];
+    }* soluts[500] {};
 
 
     void DLXcover(DLXNode* col)
@@ -507,34 +454,10 @@ public:
         DLXplaceSolution();
     }
 
-
+public:
 
     void clear()
     {
         *this = { method };
     }
 };
-
-
-
-void pr(sudoku_solver* s)
-{
-    //for (byte y = 1; y <= 9; ++y)
-    //{
-    //    std::cout << (y > 1 && (y - 1) % 3 == 0 ? " -----+-----+-----\n  " : "  ");
-    //    for (byte x = 1; x <= 9; ++x)
-    //        std::cout << (x > 1 && (x - 1) % 3 == 0 ? " | " : "") << char(s->get(x, y) ? s->get(x, y) + '0' : '.') 
-    //        << "[" << s->field[x - 1][y - 1].count_impossible << ":"
-    //        << (s->get_impossible(x-1,y-1,1) ? '1' : '.')
-    //        << (s->get_impossible(x-1,y-1,2) ? '2' : '.')
-    //        << (s->get_impossible(x-1,y-1,3) ? '3' : '.')
-    //        << (s->get_impossible(x-1,y-1,4) ? '4' : '.')
-    //        << (s->get_impossible(x-1,y-1,5) ? '5' : '.')
-    //        << (s->get_impossible(x-1,y-1,6) ? '6' : '.')
-    //        << (s->get_impossible(x-1,y-1,7) ? '7' : '.')
-    //        << (s->get_impossible(x-1,y-1,8) ? '8' : '.')
-    //        << (s->get_impossible(x-1,y-1,9) ? '9' : '.')
-    //        << "]";
-    //    cout << endl;
-    //}
-}

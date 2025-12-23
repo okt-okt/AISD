@@ -43,7 +43,7 @@ ostream& operator<<(ostream& out, sudoku_solver& s)
     {
         cout << (y > 1 && (y - 1) % 3 == 0 ? " -----+-----+-----\n  " : "  ");
         for (byte x = 1; x <= 9; ++x)
-            cout << (x > 1 && (x - 1) % 3 == 0 ? " | " : "") << char(s.get(x, y) ? s.get(x, y) + '0' : '.') /*<< "[" << s.field[x - 1][y - 1].count_impossible << ":" << std::hex << s.field[x - 1][y - 1].impossible << "]"*/;
+            cout << (x > 1 && (x - 1) % 3 == 0 ? " | " : "") << char(s.get(x, y) ? s.get(x, y) + '0' : '.');
         cout << endl;
     }
     return out;

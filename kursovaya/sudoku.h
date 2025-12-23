@@ -21,7 +21,6 @@ enum sudoku_solver_method : byte
 
 class sudoku_solver
 {
-public:
     struct
     {
         unsigned int val : 4;
@@ -30,10 +29,9 @@ public:
         unsigned int impossible : 2*9;
     } field[9][9] {};
 
-    sudoku_solver_method method;
-
-
 public:
+
+    const sudoku_solver_method method;
 
     sudoku_solver(sudoku_solver_method method = iteration) : method(method)
     {
@@ -235,7 +233,6 @@ public:
         byte x = 1, y = 1;
         for (;;)
         {
-            pr(this);
             if (set_next(x, y) == 0)
             {
                 do
